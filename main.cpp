@@ -1,6 +1,9 @@
 #include <QCoreApplication>
 #include <cmath>
 #include <optional>
+#include <fstream>
+#include <filesystem>
+
 
 enum class LinesStatus {
   INSIDE,
@@ -49,9 +52,8 @@ public:
 
 
     if(!rectangleIntersect(anotherLine) ) {
-        return false;
+        //return false;
       }
-
 
     //A - начальная точка
     //B - конечная точка
@@ -196,15 +198,56 @@ private:
 
 
 
+void test () {
+Point point{2,2};
+Point point2{100,100};
+
+Line line1(point,point2);
+
+Point point3{6,3};
+Point point4{3,6};
+
+Line line2(point3,point4);
 
 
 
 
+bool inter = line2.intersect(line1);
 
+qDebug() << inter;
+
+}
+
+
+Polygon readPolygon(const std::string& path){
+
+
+std::ifstream in(path);
+
+if (in.is_open())
+   {
+       std::string line;
+       getline(in,line);
+
+
+
+   }else {
+       return Polygon{};
+   }
+
+}
+
+
+std::vector<Point> readPoint()
 
 int main(int argc, char *argv[])
 {
   QCoreApplication a(argc, argv);
+  const std::filesystem::path polygonPath = std::filesystem::current_path() / "polygon.txt";
 
+  Polygon polygon = readPolygon(polygonPath.string());
+
+test();
+exit(9);
   return a.exec();
 }
