@@ -2,8 +2,9 @@
 #include <cmath>
 #include <optional>
 #include <fstream>
-#include <filesystem>
-
+#include <QDir>
+#include <sstream>
+#include <iostream>
 
 enum class LinesStatus {
   INSIDE,
@@ -135,6 +136,9 @@ private:
 
 
 class Polygon {
+public:
+  Polygon() = default;
+  Polygon(std::vector<Point>&& vertices) : m_vertices(std::move(vertices)) {}
 
   void addPoint(const Point& point){
   if(point.isValid())
@@ -176,26 +180,9 @@ class Polygon {
   }
 
 private:
-// std::optional<std::reference_wrapper<const Point>> lastPoint() const{
-
-//   if(m_lines.empty()){
-//     return std::nullopt;
-//     }
-
-//  return m_lines.back().endPoint();
-// }
-
-
-//  std::vector<Line> m_lines;
 
   std::vector<Point> m_vertices;
-
 };
-
-
-
-
-
 
 
 void test () {
@@ -219,35 +206,108 @@ qDebug() << inter;
 }
 
 
-Polygon readPolygon(const std::string& path){
 
 
-std::ifstream in(path);
+std::vector<Point> readPoints(const std::string& path){
 
-if (in.is_open())
-   {
-       std::string line;
-       getline(in,line);
+  static constexpr char delimeterXY = ',';
+  static constexpr char delimeterPoints = ' ';
 
+  std::vector<Point> resultPoints;
 
+  std::ifstream in(path);
 
-   }else {
-       return Polygon{};
-   }
+  if (in.is_open())
+     {
+         std::string line;
+         while(getline(in,line)){
 
+             std::string XY;
+             std::istringstream tokenStream(line);
+
+             while (std::getline(tokenStream, XY, delimeterPoints))
+               {
+                 size_t pos = 0;
+                 float x;
+                 float y;
+                 pos = XY.find(delimeterXY);
+
+                 if( pos != std::string::npos) {
+                 x = std::stof(XY.substr(0, pos));
+                 XY.erase(0, pos + 1);
+                 y = std::stof(XY);
+
+                 resultPoints.emplace_back(Point{x,y});
+               }
+         }
+
+      }
+    }
+
+  return resultPoints;
 }
-
-
-std::vector<Point> readPoint()
 
 int main(int argc, char *argv[])
 {
   QCoreApplication a(argc, argv);
-  const std::filesystem::path polygonPath = std::filesystem::current_path() / "polygon.txt";
 
-  Polygon polygon = readPolygon(polygonPath.string());
+//  const std::filesystem::path polygonPath = std::filesystem::current_path() / "polygon.txt";
+  static const std::string currentDir = QDir::currentPath().toStdString() + QDir::separator().toLatin1();
+  static const std::string pathPolygon = currentDir +  "polygon.txt";
+  static const std::string pathLines = currentDir +  "lines.txt";
 
-test();
-exit(9);
+  Polygon polygon = readPoints(pathPolygon);
+
+  std::vector<Point> pointLines = readPoints(pathLines);
+
+  int sizePoint = pointLines.size();
+
+  if(sizePoint % 2 != 0){
+      std::cout << "error read lines";
+      return 0;
+   }
+
+  std::vector<Line> lines;
+  lines.reserve(sizePoint/2);
+
+  for(auto it = pointLines.cbegin(), itEnd = pointLines.cend(); it < itEnd; ++it ){
+
+
+    }
+
+
+
+  exit(9);
+
   return a.exec();
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
